@@ -1,0 +1,24 @@
+{
+  "name": "solbase",
+  "license": "MIT",
+  "version": "0.0.1",
+  "description": "Modern, opinionated and gas optimized base for smart contract development.",
+  "files": [
+    "src/**/*.sol"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sol-DAO/solbase.git"
+  },
+  "devDependencies": {
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.13",
+    "husky": "^8.0.0"
+  },
+  "scripts": {
+    "lint": "prettier --write **.sol",
+    "prepare": "husky install",
+    "test": "forge test",
+    "snap": "forge snapshot"
+  }
+}

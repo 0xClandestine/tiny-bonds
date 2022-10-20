@@ -1,0 +1,33 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "src/SmallBondsFactory.sol",
+    "id": 2334,
+    "exportedSymbols": {},
+    "nodeType": "SourceUnit",
+    "src": "35:28:7",
+    "nodes": [
+      {
+        "id": 2333,
+        "nodeType": "PragmaDirective",
+        "src": "35:24:7",
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0"
+        ]
+      }
+    ],
+    "license": "WTFPL"
+  },
+  "id": 7
+}
