@@ -119,7 +119,12 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
     /// Bond Purchase Logic
     /// -----------------------------------------------------------------------
 
-    function purchaseBond(address to, uint256 amountIn, uint256 minOutput) external virtual returns (uint256 output) {
+    function purchaseBond(address to, uint256 amountIn, uint256 minOutput)
+        external
+        virtual
+        whenNotPaused
+        returns (uint256 output)
+    {
         Pricing storage info = pricing;
         require(info.virtualInputReserves != 0, "!LIQUIDITY");
         uint256 _availableDebt = availableDebt();
@@ -240,8 +245,24 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
     /// Viewables
     /// -----------------------------------------------------------------------
 
-    /// @dev Returns value that accounts for price decay.
-    function virtualInputReverves() external view returns (uint256) {
+    function halfLife() external view returns (uint256) {
+        return pricing.halfLife;
+    }
+
+    function lastUpdate() external view returns (uint256) {
+        return pricing.lastUpdate;
+    }
+
+    function levelBips() external view returns (uint256) {
+        return pricing.levelBips;
+    }
+
+    function virtualOutputReserves() external view returns (uint256) {
+        return pricing.virtualOutputReserves;
+    }
+
+    /// @dev Return value accounts for price decay.
+    function virtualInputReserves() external view returns (uint256) {
         Pricing memory info = pricing;
         return expToLevel(info.virtualInputReserves, block.timestamp - info.lastUpdate, info.halfLife, info.levelBips);
     }
@@ -257,10 +278,11 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
     function spotPrice() external view returns (uint256) {
         Pricing memory info = pricing;
 
-        uint256 virtualInputReserves =
-            expToLevel(info.virtualInputReserves, block.timestamp - info.lastUpdate, info.halfLife, info.levelBips);
-
-        return FixedPointMathLib.mulDivDown(1e18, virtualInputReserves, availableDebt() + info.virtualOutputReserves);
+        return FixedPointMathLib.mulDivDown(
+            1e18,
+            expToLevel(info.virtualInputReserves, block.timestamp - info.lastUpdate, info.halfLife, info.levelBips),
+            availableDebt() + info.virtualOutputReserves
+        );
     }
 
     function getAmountOut(uint256 amountIn) external view returns (uint256 output) {
@@ -308,6 +330,6 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
     {
         z = x >> (elapsed / halfLife);
         z -= z.mulDivDown(elapsed % halfLife, halfLife) >> 1;
-        z += (x - z).mulDivDown(levelBips, 1e4);
+        z += FixedPointMathLib.mulDivDown(x - z, levelBips, 1e4);
     }
 }
