@@ -86,16 +86,16 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
     /// Immutables
     /// -----------------------------------------------------------------------
 
-    function term() public pure returns (uint256) {
-        return _getArgUint256(0);
+    function outputToken() public pure returns (address) {
+        return _getArgAddress(12);
     }
 
     function inputToken() public pure returns (address) {
-        return _getArgAddress(32);
+        return _getArgAddress(44);
     }
 
-    function outputToken() public pure returns (address) {
-        return _getArgAddress(52);
+    function term() public pure returns (uint256) {
+        return _getArgUint256(64);
     }
 
     function initialize(address _owner) external {
@@ -254,7 +254,7 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
         return ERC20(outputToken()).balanceOf(address(this)) - totalDebt;
     }
 
-    function spotPriceFor() external view returns (uint256) {
+    function spotPrice() external view returns (uint256) {
         Pricing memory info = pricing;
 
         uint256 virtualInputReserves =
