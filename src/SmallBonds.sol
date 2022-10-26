@@ -156,14 +156,12 @@ contract SmallBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     function redeemBond(address to, uint256 bondId) external whenNotPaused returns (uint256 output) {
         Bond storage position = bondOf[msg.sender][bondId];
         output = getRedeemAmountOut(position.owed, position.redeemed, position.creation);
-        if (output > 0) {
-            totalDebt -= output;
-            position.redeemed += output.safeCastTo128();
-            outputToken().safeTransfer(to, output);
-            emit BondRedeemed(msg.sender, bondId, output);
-        }
+        //TODO replace rq with if + custom error
         require(output > 0, "!OUTPUT");
-        //TODO point out small potato
+        totalDebt -= output;
+        position.redeemed += output.safeCastTo128();
+        outputToken().safeTransfer(to, output);
+        emit BondRedeemed(msg.sender, bondId, output);
     }
 
     function redeemBondBatch(address to, uint256[] memory bondIds)
@@ -359,24 +357,24 @@ contract SmallBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     function getAmountOut(
         uint256 input,
         uint256 outputReserves,
-        uint256 virtualOutputAmt,
-        uint256 virtualInputAmt,
+        uint256 virtualOutput,
+        uint256 virtualInput,
         uint256 elapsed,
-        uint256 halfLife,
-        uint256 levelBips
+        uint256 _halfLife,
+        uint256 _levelBips
     ) internal pure returns (uint256 output) {
         output = input.mulDivDown(
-            outputReserves + virtualOutputAmt, expToLevel(virtualInputAmt, elapsed, halfLife, levelBips) + input
+            outputReserves + virtualOutput, expToLevel(virtualInput, elapsed, _halfLife, _levelBips) + input
         );
     }
 
-    function expToLevel(uint256 x, uint256 elapsed, uint256 halfLife, uint256 levelBips)
+    function expToLevel(uint256 x, uint256 elapsed, uint256 _halfLife, uint256 _levelBips)
         internal
         pure
         returns (uint256 z)
     {
-        z = x >> (elapsed / halfLife);
-        z -= z.mulDivDown(elapsed % halfLife, halfLife) >> 1;
-        z += FixedPointMathLib.mulDivDown(x - z, levelBips, 1e4);
+        z = x >> (elapsed / _halfLife);
+        z -= z.mulDivDown(elapsed % _halfLife, _halfLife) >> 1;
+        z += FixedPointMathLib.mulDivDown(x - z, _levelBips, 1e4);
     }
 }

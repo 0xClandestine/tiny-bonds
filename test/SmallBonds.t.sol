@@ -184,7 +184,7 @@ contract SmallBondsTest is Test {
         MockERC20(input).approve(address(bonds), 1 ether);
 
         uint256 balBefore = MockERC20(output).balanceOf(alice);
-        uint256 amountOut = bonds.purchaseBond(alice, 1 ether, 0);
+        bonds.purchaseBond(alice, 1 ether, 0);
 
         vm.warp(block.timestamp + 5 days);
         uint256 redeemAmountOut = bonds.redeemBond(alice, 0);
@@ -213,7 +213,7 @@ contract SmallBondsTest is Test {
         MockERC20(input).approve(address(bonds), 1 ether);
 
         uint256 balBefore = MockERC20(output).balanceOf(alice);
-        uint256 amountOut = bonds.purchaseBond(alice, 1 ether, 0);
+        bonds.purchaseBond(alice, 1 ether, 0);
 
         vm.warp(block.timestamp + 2.5 days);
 
@@ -238,10 +238,6 @@ contract SmallBondsTest is Test {
     function testBondRedemptionFullMultipleUsers() public {
         uint256 expectedAmountOutAlice = 99900099900099900;
         uint256 expectedAmountOutBob = 99700698503093712;
-        address token = address(input);
-        uint256 virtualReserves = 1000e18;
-        uint256 halfLife = 1;
-        uint256 levelBips = 10_000;
 
         // setup test accounts
         address alice = address(0xAAAA);
@@ -283,8 +279,6 @@ contract SmallBondsTest is Test {
     }
 
     function testBondTransfer() public {
-        uint256 halfLife = 1; // must be greater than 0
-        uint256 levelBips = 10_000;
         uint256 expectedAmountOut = 99900099900099900;
 
         deal(address(output), address(bonds), 100 ether);
