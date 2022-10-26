@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: WTFPL
 pragma solidity >=0.8.0;
 
+import {Clone} from "solbase/utils/Clone.sol";
 import {Owned} from "solbase/auth/Owned.sol";
 import {ERC20} from "solbase/tokens/ERC20/ERC20.sol";
-import {FixedPointMathLib} from "solbase/utils/FixedPointMathLib.sol";
-import {SafeTransferLib} from "solbase/utils/SafeTransferLib.sol";
-import {SafeCastLib} from "solbase/utils/SafeCastLib.sol";
-import {SafeMulticallable} from "solbase/utils/SafeMulticallable.sol";
 import {SelfPermit} from "solbase/utils/SelfPermit.sol";
-import {Clone} from "solbase/utils/Clone.sol";
+import {SafeCastLib} from "solbase/utils/SafeCastLib.sol";
+import {SafeTransferLib} from "solbase/utils/SafeTransferLib.sol";
+import {FixedPointMathLib} from "solbase/utils/FixedPointMathLib.sol";
+import {SafeMulticallable} from "solbase/utils/SafeMulticallable.sol";
 
+// 2 slots, 64 bytes
 struct Bond {
-    uint256 owed;
-    uint256 redeemed;
-    uint256 creation;
+    uint128 owed; // 16 bytes
+    uint128 redeemed; // 16 bytes
+    uint256 creation; // 32 bytes
 }
 
 // 2 slots, 64 bytes
@@ -27,7 +28,7 @@ struct Pricing {
 
 /// @title SmallBonds
 /// @author 0xClandestine
-contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
+contract SmallBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     /// -----------------------------------------------------------------------
     /// Dependencies
     /// -----------------------------------------------------------------------
@@ -137,13 +138,14 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
             info.halfLife,
             info.levelBips
         );
-        require(output >= minOutput && _availableDebt >= output, "BAD OUTPUT");
+        require(output >= minOutput, "BAD OUTPUT");
+        require(_availableDebt >= output, "BAD OUTPUT");
         inputToken().safeTransferFrom(msg.sender, owner, amountIn);
         unchecked {
             totalDebt += output;
         }
         info.virtualInputReserves += amountIn.safeCastTo128();
-        bondOf[to].push(Bond(output, 0, block.timestamp));
+        bondOf[to].push(Bond(output.safeCastTo128(), 0, block.timestamp));
         emit BondSold(msg.sender, amountIn, output);
     }
 
@@ -156,11 +158,12 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
         output = getRedeemAmountOut(position.owed, position.redeemed, position.creation);
         if (output > 0) {
             totalDebt -= output;
-            position.redeemed += output;
+            position.redeemed += output.safeCastTo128();
             outputToken().safeTransfer(to, output);
             emit BondRedeemed(msg.sender, bondId, output);
         }
         require(output > 0, "!OUTPUT");
+        //TODO point out small potato
     }
 
     function redeemBondBatch(address to, uint256[] memory bondIds)
@@ -173,11 +176,11 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
         for (uint256 i; i < length;) {
             Bond storage position = bondOf[msg.sender][bondIds[i]];
             uint256 output = getRedeemAmountOut(position.owed, position.redeemed, position.creation);
-            position.redeemed += output;
+            position.redeemed += output.safeCastTo128();
             totalOutput += output;
             emit BondRedeemed(msg.sender, bondIds[i], output);
             unchecked {
-                i++;
+                ++i;
             }
         }
         totalDebt -= totalOutput;
@@ -239,6 +242,50 @@ contract SmallBonds is Owned(address(0)), SafeMulticallable, SelfPermit, Clone {
         bool newValue = !paused;
         paused = newValue;
         emit Paused(newValue);
+    }
+
+    /// @notice Modify multiple pricing variables at once.
+    /// @dev Use type(uint256).max if you do not want to change a variable.
+    function updatePricing(
+        uint128 newVirtualInput,
+        uint128 newVirtualOutput,
+        uint96 newHalfLife,
+        uint96 newLevelBips,
+        bool lastUpdateNow,
+        bool pause
+    ) external onlyOwner {
+        Pricing storage info = pricing;
+
+        if (newVirtualInput != type(uint256).max) {
+            info.virtualInputReserves = newVirtualInput;
+            emit VirtualInputReservesSet(newVirtualInput);
+        }
+
+        if (newVirtualOutput != type(uint256).max) {
+            info.virtualOutputReserves = newVirtualOutput;
+            emit VirtualOutputReservesSet(newVirtualOutput);
+        }
+
+        if (newHalfLife != type(uint256).max) {
+            info.halfLife = newHalfLife;
+            emit HalfLifeSet(newHalfLife);
+        }
+
+        if (newLevelBips != type(uint256).max) {
+            info.levelBips = newLevelBips;
+            emit LevelBipsSet(newLevelBips);
+        }
+
+        if (lastUpdateNow) {
+            info.lastUpdate = (block.timestamp).safeCastTo64();
+            emit LastUpdateSet(block.timestamp);
+        }
+
+        if (pause) {
+            bool newState = !paused;
+            paused = newState;
+            emit Paused(newState);
+        }
     }
 
     /// -----------------------------------------------------------------------

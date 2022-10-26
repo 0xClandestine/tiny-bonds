@@ -24,11 +24,12 @@ contract SmallBondsTest is Test {
         factory = new SmallBondsFactory();
         input = address(new MockERC20());
         output = address(new MockERC20());
-        bonds = SmallBonds(factory.create(output, input, 5 days));
+        bonds = SmallBonds(factory.create(keccak256(abi.encode(420)), output, input, 5 days));
     }
 
     function testCreate() public {
-        address predictedAddress = factory.predictDeterministicAddress(output, input, 5 days);
+        address predictedAddress =
+            factory.predictDeterministicAddress(keccak256(abi.encode(420)), output, input, 5 days);
 
         bonds.initialize(address(this));
 
@@ -37,6 +38,18 @@ contract SmallBondsTest is Test {
         assertEq(bonds.outputToken(), output);
         assertEq(bonds.inputToken(), input);
         assertEq(bonds.owner(), address(this));
+    }
+
+    function testMulticallCreate() public {
+        bytes[] memory calls = new bytes[](3);
+
+        uint256 salt = uint256(keccak256(abi.encode(1)));
+
+        calls[0] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt, input, output, 1 days);
+        calls[1] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt + 1, input, output, 3 days);
+        calls[2] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt + 2, input, output, 5 days);
+
+        factory.multicall(calls);
     }
 
     function testDecay() public {
@@ -99,6 +112,23 @@ contract SmallBondsTest is Test {
         assertEq(bonds.virtualInputReserves(), 1000 ether);
         assertEq(bonds.halfLife(), 1 days);
         assertEq(bonds.levelBips(), 9_000);
+        assertEq(bonds.lastUpdate(), block.timestamp);
+
+        // test updatePricing()
+        vm.warp(block.timestamp + 60 seconds);
+
+        // test access control
+        vm.expectRevert();
+        vm.prank(address(0xbad));
+        bonds.updatePricing(2000 ether, 5000 ether, 5 days, 10_000, true, true);
+
+        bonds.updatePricing(2000 ether, 5000 ether, 5 days, 10_000, true, true);
+
+        assertEq(bonds.owner(), address(this));
+        assertEq(bonds.virtualInputReserves(), 2000 ether);
+        assertEq(bonds.virtualOutputReserves(), 5000 ether);
+        assertEq(bonds.halfLife(), 5 days);
+        assertEq(bonds.levelBips(), 10_000);
         assertEq(bonds.lastUpdate(), block.timestamp);
 
         // make sure contract cannot be initialized twice

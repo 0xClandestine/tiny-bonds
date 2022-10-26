@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: WTFPL
 pragma solidity >=0.8.0;
 
+import {SafeMulticallable} from "solbase/utils/SafeMulticallable.sol";
 import {LibClone} from "solbase/utils/LibClone.sol";
 import {SmallBonds} from "./SmallBonds.sol";
 
 /// @notice Creates clones of SmallBonds with immutable args.
 /// @author 0xClandestine
-contract SmallBondsFactory {
+contract SmallBondsFactory is SafeMulticallable {
     /// -----------------------------------------------------------------------
     /// Dependencies
     /// -----------------------------------------------------------------------
@@ -33,21 +34,25 @@ contract SmallBondsFactory {
     /// Factory Logic
     /// -----------------------------------------------------------------------
 
-    function create(address outputToken, address inputToken, uint256 term) external returns (address market) {
+    /// @dev Use a multicall if you'd like to create multiple markets in a single call.
+    function create(bytes32 salt, address outputToken, address inputToken, uint256 term)
+        external
+        returns (address market)
+    {
         bytes memory data = abi.encode(outputToken, inputToken, term);
 
-        market = implementation.cloneDeterministic(data, keccak256(data));
+        market = implementation.cloneDeterministic(data, salt);
 
         emit MarketCreated(market);
     }
 
-    function predictDeterministicAddress(address outputToken, address inputToken, uint256 term)
+    function predictDeterministicAddress(bytes32 salt, address outputToken, address inputToken, uint256 term)
         external
         view
         returns (address)
     {
         bytes memory data = abi.encode(outputToken, inputToken, term);
 
-        return implementation.predictDeterministicAddress(data, keccak256(data), address(this));
+        return implementation.predictDeterministicAddress(data, salt, address(this));
     }
 }
