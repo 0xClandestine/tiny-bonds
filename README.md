@@ -20,7 +20,7 @@ Tiny Bonds enable anyone to raise liquidity or capital in exchange for their tok
 To install with [Foundry](https://github.com/gakonst/foundry):
 
 ```
-forge install timeless-fi/timeless
+forge install 0xClandestine/tiny-bonds
 ```
 
 ## Local development
