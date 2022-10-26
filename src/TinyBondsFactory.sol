@@ -3,11 +3,11 @@ pragma solidity >=0.8.0;
 
 import {SafeMulticallable} from "solbase/utils/SafeMulticallable.sol";
 import {LibClone} from "solbase/utils/LibClone.sol";
-import {SmallBonds} from "./SmallBonds.sol";
+import {TinyBonds} from "./TinyBonds.sol";
 
-/// @notice Creates clones of SmallBonds with immutable args.
+/// @notice Creates clones of TinyBonds with immutable args.
 /// @author 0xClandestine
-contract SmallBondsFactory is SafeMulticallable {
+contract TinyBondsFactory is SafeMulticallable {
     /// -----------------------------------------------------------------------
     /// Dependencies
     /// -----------------------------------------------------------------------
@@ -27,7 +27,7 @@ contract SmallBondsFactory is SafeMulticallable {
     address public immutable implementation;
 
     constructor() {
-        implementation = address(new SmallBonds());
+        implementation = address(new TinyBonds());
     }
 
     /// -----------------------------------------------------------------------

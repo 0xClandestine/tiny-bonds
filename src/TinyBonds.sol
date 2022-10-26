@@ -26,9 +26,9 @@ struct Pricing {
     uint96 levelBips; // 12 bytes
 }
 
-/// @title SmallBonds
+/// @title TinyBonds
 /// @author 0xClandestine
-contract SmallBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
+contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     /// -----------------------------------------------------------------------
     /// Dependencies
     /// -----------------------------------------------------------------------

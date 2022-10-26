@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "solbase/tokens/ERC20/ERC20.sol";
 
-import "../src/SmallBondsFactory.sol";
+import "../src/TinyBondsFactory.sol";
 
 contract MockERC20 is ERC20 {
     constructor() ERC20("", "", 18) {}
@@ -14,17 +14,17 @@ contract MockERC20 is ERC20 {
     }
 }
 
-contract SmallBondsTest is Test {
-    SmallBondsFactory factory;
-    SmallBonds bonds;
+contract TinyBondsTest is Test {
+    TinyBondsFactory factory;
+    TinyBonds bonds;
     address input; // give
     address output; // want
 
     function setUp() public {
-        factory = new SmallBondsFactory();
+        factory = new TinyBondsFactory();
         input = address(new MockERC20());
         output = address(new MockERC20());
-        bonds = SmallBonds(factory.create(keccak256(abi.encode(420)), output, input, 5 days));
+        bonds = TinyBonds(factory.create(keccak256(abi.encode(420)), output, input, 5 days));
     }
 
     function testCreate() public {
@@ -45,9 +45,9 @@ contract SmallBondsTest is Test {
 
         uint256 salt = uint256(keccak256(abi.encode(1)));
 
-        calls[0] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt, input, output, 1 days);
-        calls[1] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt + 1, input, output, 3 days);
-        calls[2] = abi.encodeWithSelector(SmallBondsFactory.create.selector, salt + 2, input, output, 5 days);
+        calls[0] = abi.encodeWithSelector(TinyBondsFactory.create.selector, salt, input, output, 1 days);
+        calls[1] = abi.encodeWithSelector(TinyBondsFactory.create.selector, salt + 1, input, output, 3 days);
+        calls[2] = abi.encodeWithSelector(TinyBondsFactory.create.selector, salt + 2, input, output, 5 days);
 
         factory.multicall(calls);
     }
