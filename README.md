@@ -12,7 +12,7 @@ Tiny Bonds enable anyone to raise liquidity or capital in exchange for their tok
 
 ## Architecture
 
--   [`TinyBonds.sol`](src/TinyBonds.sol): 
+-   [`TinyBonds.sol`](src/TinyBonds.sol): `TinyBonds` enable anyone to raise liquidity or capital in exchange for their tokens.
 -   [`TinyBondsFactory.sol`](src/TinyBondsFactory.sol): Minimal proxy factory that creates `TinyBonds` clones.
 
 ## Installation
