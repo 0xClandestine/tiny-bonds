@@ -77,6 +77,12 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
 
     error BadOutput();
 
+    error Initialized();
+    
+    error IsPaused();
+
+    error BadPricing();
+
     /// -----------------------------------------------------------------------
     /// Mutables
     /// -----------------------------------------------------------------------
@@ -108,7 +114,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     }
 
     function initialize(address _owner) external {
-        require(!initialized, "INITIALIZED");
+        if(initialized) revert Initialized();
         owner = _owner;
         initialized = true;
         paused = true;
@@ -120,7 +126,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     /// -----------------------------------------------------------------------
 
     modifier whenNotPaused() {
-        require(!paused, "PAUSED");
+        if (paused) revert IsPaused();
         _;
     }
 
@@ -135,7 +141,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
         returns (uint256 output)
     {
         Pricing storage info = pricing;
-        require(info.virtualInputReserves != 0, "!LIQUIDITY");
+        if (info.virtualInputReserves == 0) revert BadPricing();
         uint256 _availableDebt = availableDebt();
         output = getAmountOut(
             amountIn,
