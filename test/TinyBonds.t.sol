@@ -315,4 +315,35 @@ contract TinyBondsTest is Test {
         assertEq(redeemed, 0);
         assertEq(creation, 0);
     }
+
+    function testRedeemBondBatch() public {
+        deal(address(output), address(bonds), 100 ether);
+
+        bonds.initialize(address(this));
+        bonds.setVirtualInputReserves(1000 ether);
+        bonds.setHalfLife(1 days);
+        bonds.setLevelBips(10_000);
+        bonds.setLastUpdate();
+        bonds.setPause();
+
+        MockERC20(input).mint(address(this), 1e18);
+        MockERC20(input).approve(address(bonds), 1e18);
+
+        uint256 amountOut = bonds.purchaseBond(address(this), 1e18, 0);
+
+        MockERC20(input).mint(address(this), 1e18);
+        MockERC20(input).approve(address(bonds), 1e18);
+
+        amountOut = bonds.purchaseBond(address(this), 1e18, 0);
+
+        uint256[] memory ids = new uint256[](2);
+        ids[0] = 0;
+        ids[1] = 1;
+
+        vm.warp(1 days);
+        bonds.redeemBondBatch(address(this), ids);
+        
+        vm.warp(1 days);
+        bonds.redeemBondBatch(address(this), ids);
+    }
 }
