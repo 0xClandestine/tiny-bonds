@@ -70,6 +70,14 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     event Paused(bool paused);
 
     /// -----------------------------------------------------------------------
+    /// Errors
+    /// -----------------------------------------------------------------------
+
+    error MinOutput();
+
+    error BadOutput();
+
+    /// -----------------------------------------------------------------------
     /// Mutables
     /// -----------------------------------------------------------------------
 
@@ -138,8 +146,8 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
             info.halfLife,
             info.levelBips
         );
-        require(output >= minOutput, "BAD OUTPUT");
-        require(_availableDebt >= output, "BAD OUTPUT");
+        if (output < minOutput) revert MinOutput();
+        if (_availableDebt < output) revert BadOutput();
         inputToken().safeTransferFrom(msg.sender, owner, amountIn);
         unchecked {
             totalDebt += output;
@@ -156,7 +164,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     function redeemBond(address to, uint256 bondId) external whenNotPaused returns (uint256 output) {
         Bond storage position = bondOf[msg.sender][bondId];
         output = getRedeemAmountOut(position.owed, position.redeemed, position.creation);
-        require(output > 0, "!OUTPUT");
+        if (output == 0) revert BadOutput();
         totalDebt -= output;
         position.redeemed += output.safeCastTo128();
         outputToken().safeTransfer(to, output);
