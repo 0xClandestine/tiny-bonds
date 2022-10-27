@@ -1,4 +1,17 @@
+# example:
+# python3 simulation.py --available-debt 50000000000000000000 --virtual-input 100000000000000000000 --virtual-output 50000000000000000000 --half-life 1 --half-lives 7 --level-bips 9000
+
 from uniplot import plot
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--available-debt', type=int, required=True)
+parser.add_argument('--virtual-input', type=int, required=True)
+parser.add_argument('--virtual-output', type=int, required=True)
+parser.add_argument('--half-life', type=int, required=True)
+parser.add_argument('--half-lives', type=int, required=True)
+parser.add_argument('--level-bips', type=int, required=True)
+args = parser.parse_args()
 
 def spot_price(
     available_debt,
@@ -27,7 +40,6 @@ def terminal_plot(
     available_debt,
     virtual_input,
     virtual_output,
-    elapsed_time_since_last_update,
     half_life,
     half_lives,
     level_bips
@@ -38,7 +50,7 @@ def terminal_plot(
                 available_debt,
                 virtual_input,
                 virtual_output,
-                elapsed_time_since_last_update + i,
+                i,
                 half_life,
                 level_bips
             )
@@ -52,4 +64,4 @@ def terminal_plot(
     print("Starting Price: ", x[0])
     print("Ending Price: ", x[-1])
 
-terminal_plot(50e18, 100e18, 50e18, 0, 1, 7, 9000)
+terminal_plot(args.available_debt, args.virtual_input, args.virtual_output, args.half_life, args.half_lives, args.level_bips)
