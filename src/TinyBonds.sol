@@ -156,7 +156,6 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     function redeemBond(address to, uint256 bondId) external whenNotPaused returns (uint256 output) {
         Bond storage position = bondOf[msg.sender][bondId];
         output = getRedeemAmountOut(position.owed, position.redeemed, position.creation);
-        //TODO replace rq with if + custom error
         require(output > 0, "!OUTPUT");
         totalDebt -= output;
         position.redeemed += output.safeCastTo128();
@@ -243,7 +242,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     }
 
     /// @notice Modify multiple pricing variables at once.
-    /// @dev Use type(uint256).max if you do not want to change a variable.
+    /// @dev Use type(variable_type).max if you do not want to change a variable.
     function updatePricing(
         uint128 newVirtualInput,
         uint128 newVirtualOutput,
@@ -254,22 +253,22 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     ) external onlyOwner {
         Pricing storage info = pricing;
 
-        if (newVirtualInput != type(uint256).max) {
+        if (newVirtualInput != type(uint128).max) {
             info.virtualInputReserves = newVirtualInput;
             emit VirtualInputReservesSet(newVirtualInput);
         }
 
-        if (newVirtualOutput != type(uint256).max) {
+        if (newVirtualOutput != type(uint128).max) {
             info.virtualOutputReserves = newVirtualOutput;
             emit VirtualOutputReservesSet(newVirtualOutput);
         }
 
-        if (newHalfLife != type(uint256).max) {
+        if (newHalfLife != type(uint96).max) {
             info.halfLife = newHalfLife;
             emit HalfLifeSet(newHalfLife);
         }
 
-        if (newLevelBips != type(uint256).max) {
+        if (newLevelBips != type(uint96).max) {
             info.levelBips = newLevelBips;
             emit LevelBipsSet(newLevelBips);
         }
