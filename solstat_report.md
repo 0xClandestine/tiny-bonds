@@ -1,4 +1,4 @@
-# Gas Optimizations - (Total Optimizations 43)
+# Gas Optimizations - (Total Optimizations 42)
 
 The following sections detail the gas optimizations found throughout the codebase. 
 Each optimization is documented with the setup, an explainer for the optimization, a gas report and line identifiers for each optimization across the codebase. For each section's gas report, the optimizer was turned on and set to 10000 runs. 
@@ -6,98 +6,6 @@ You can replicate any tests/gas reports by heading to [0xKitsune/gas-lab](https:
 You can also easily update the optimizer runs in the `foundry.toml`.
 
 <br>
-
-
-## Mark functions as payable (with discretion)
-You can mark public or external functions as payable to save gas. Functions that are not payable have additional logic to check if there was a value sent with a call, however, making a function payable eliminates this check. This optimization should be carefully considered due to potentially unwanted behavior when a function does not need to accept ether.
-
-```js
-contract GasTest is DSTest {
-    Contract0 c0;
-    Contract1 c1;
-
-    function setUp() public {
-        c0 = new Contract0();
-        c1 = new Contract1();
-    }
-
-    function testGas() public {
-        c0.isNotPayable();
-        c1.isPayable();
-    }
-}
-
-contract Contract0 {
-    function isNotPayable() public view {
-        uint256 val = 0;
-        val++;
-    }
-}
-
-contract Contract1 {
-    function isPayable() public payable {
-        uint256 val = 0;
-        val++;
-    }
-}
-```
-
-### Gas Report
-```js
-╭────────────────────┬─────────────────┬─────┬────────┬─────┬─────────╮
-│ Contract0 contract ┆                 ┆     ┆        ┆     ┆         │
-╞════════════════════╪═════════════════╪═════╪════════╪═════╪═════════╡
-│ Deployment Cost    ┆ Deployment Size ┆     ┆        ┆     ┆         │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ 32081              ┆ 190             ┆     ┆        ┆     ┆         │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ Function Name      ┆ min             ┆ avg ┆ median ┆ max ┆ # calls │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ isNotPayable       ┆ 198             ┆ 198 ┆ 198    ┆ 198 ┆ 1       │
-╰────────────────────┴─────────────────┴─────┴────────┴─────┴─────────╯
-╭────────────────────┬─────────────────┬─────┬────────┬─────┬─────────╮
-│ Contract1 contract ┆                 ┆     ┆        ┆     ┆         │
-╞════════════════════╪═════════════════╪═════╪════════╪═════╪═════════╡
-│ Deployment Cost    ┆ Deployment Size ┆     ┆        ┆     ┆         │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ 29681              ┆ 178             ┆     ┆        ┆     ┆         │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ Function Name      ┆ min             ┆ avg ┆ median ┆ max ┆ # calls │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
-│ isPayable          ┆ 174             ┆ 174 ┆ 174    ┆ 174 ┆ 1       │
-╰────────────────────┴─────────────────┴─────┴────────┴─────┴─────────╯
-```
-
-
-
-### Lines
-- SmallBonds.sol:307
-- SmallBonds.sol:325
-- SmallBonds.sol:169
-- SmallBonds.sol:335
-- SmallBonds.sol:123
-- SmallBonds.sol:312
-- SmallBonds.sol:227
-- SmallBonds.sol:98
-- SmallBonds.sol:194
-- SmallBonds.sol:299
-- SmallBonds.sol:206
-- SmallBonds.sol:94
-- SmallBonds.sol:303
-- SmallBonds.sol:213
-- SmallBonds.sol:317
-- SmallBonds.sol:156
-- SmallBonds.sol:249
-- SmallBonds.sol:321
-- SmallBonds.sol:90
-- SmallBonds.sol:241
-- SmallBonds.sol:234
-- SmallBonds.sol:295
-- SmallBonds.sol:220
-- SmallBonds.sol:102
-- SmallBondsFactory.sol:38
-- SmallBondsFactory.sol:49
-
 
 
 
@@ -324,18 +232,17 @@ contract Contract7 {
 
 
 ### Lines
-- SmallBonds.sol:380
-- SmallBonds.sol:369
-- SmallBonds.sol:378
-- SmallBonds.sol:322
-- SmallBonds.sol:354
-- SmallBonds.sol:137
-- SmallBonds.sol:356
-- SmallBonds.sol:369
-- SmallBonds.sol:314
-- SmallBonds.sol:330
-- SmallBonds.sol:331
-- SmallBonds.sol:343
+- TinyBonds.sol:151
+- TinyBonds.sol:325
+- TinyBonds.sol:333
+- TinyBonds.sol:341
+- TinyBonds.sol:342
+- TinyBonds.sol:354
+- TinyBonds.sol:365
+- TinyBonds.sol:367
+- TinyBonds.sol:380
+- TinyBonds.sol:389
+- TinyBonds.sol:391
 
 
 
@@ -406,10 +313,10 @@ contract Contract1 {
 
 
 ### Lines
-- SmallBonds.sol:243
-- SmallBonds.sol:106
-- SmallBonds.sol:105
-- SmallBonds.sol:286
+- TinyBonds.sol:119
+- TinyBonds.sol:120
+- TinyBonds.sol:254
+- TinyBonds.sol:297
 
 
 
@@ -530,7 +437,99 @@ contract Contract3 {
 ```
 
 ### Lines
-- SmallBonds.sol:169
+- TinyBonds.sol:180
+
+
+
+## Mark functions as payable (with discretion)
+You can mark public or external functions as payable to save gas. Functions that are not payable have additional logic to check if there was a value sent with a call, however, making a function payable eliminates this check. This optimization should be carefully considered due to potentially unwanted behavior when a function does not need to accept ether.
+
+```js
+contract GasTest is DSTest {
+    Contract0 c0;
+    Contract1 c1;
+
+    function setUp() public {
+        c0 = new Contract0();
+        c1 = new Contract1();
+    }
+
+    function testGas() public {
+        c0.isNotPayable();
+        c1.isPayable();
+    }
+}
+
+contract Contract0 {
+    function isNotPayable() public view {
+        uint256 val = 0;
+        val++;
+    }
+}
+
+contract Contract1 {
+    function isPayable() public payable {
+        uint256 val = 0;
+        val++;
+    }
+}
+```
+
+### Gas Report
+```js
+╭────────────────────┬─────────────────┬─────┬────────┬─────┬─────────╮
+│ Contract0 contract ┆                 ┆     ┆        ┆     ┆         │
+╞════════════════════╪═════════════════╪═════╪════════╪═════╪═════════╡
+│ Deployment Cost    ┆ Deployment Size ┆     ┆        ┆     ┆         │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ 32081              ┆ 190             ┆     ┆        ┆     ┆         │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ Function Name      ┆ min             ┆ avg ┆ median ┆ max ┆ # calls │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ isNotPayable       ┆ 198             ┆ 198 ┆ 198    ┆ 198 ┆ 1       │
+╰────────────────────┴─────────────────┴─────┴────────┴─────┴─────────╯
+╭────────────────────┬─────────────────┬─────┬────────┬─────┬─────────╮
+│ Contract1 contract ┆                 ┆     ┆        ┆     ┆         │
+╞════════════════════╪═════════════════╪═════╪════════╪═════╪═════════╡
+│ Deployment Cost    ┆ Deployment Size ┆     ┆        ┆     ┆         │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ 29681              ┆ 178             ┆     ┆        ┆     ┆         │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ Function Name      ┆ min             ┆ avg ┆ median ┆ max ┆ # calls │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┤
+│ isPayable          ┆ 174             ┆ 174 ┆ 174    ┆ 174 ┆ 1       │
+╰────────────────────┴─────────────────┴─────┴────────┴─────┴─────────╯
+```
+
+
+
+### Lines
+- TinyBonds.sol:104
+- TinyBonds.sol:108
+- TinyBonds.sol:112
+- TinyBonds.sol:116
+- TinyBonds.sol:137
+- TinyBonds.sol:170
+- TinyBonds.sol:180
+- TinyBonds.sol:205
+- TinyBonds.sol:217
+- TinyBonds.sol:224
+- TinyBonds.sol:231
+- TinyBonds.sol:238
+- TinyBonds.sol:245
+- TinyBonds.sol:252
+- TinyBonds.sol:260
+- TinyBonds.sol:306
+- TinyBonds.sol:310
+- TinyBonds.sol:314
+- TinyBonds.sol:318
+- TinyBonds.sol:323
+- TinyBonds.sol:328
+- TinyBonds.sol:332
+- TinyBonds.sol:336
+- TinyBonds.sol:346
+- TinyBondsFactory.sol:38
+- TinyBondsFactory.sol:49
 
 
 
