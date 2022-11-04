@@ -342,7 +342,7 @@ contract TinyBondsTest is Test {
 
         vm.warp(1 days);
         bonds.redeemBondBatch(address(this), ids);
-        
+
         vm.warp(1 days);
         bonds.redeemBondBatch(address(this), ids);
     }

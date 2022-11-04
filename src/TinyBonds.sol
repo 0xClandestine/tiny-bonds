@@ -78,7 +78,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     error BadOutput();
 
     error Initialized();
-    
+
     error IsPaused();
 
     error BadPricing();
@@ -114,7 +114,7 @@ contract TinyBonds is Clone, Owned(address(0)), SelfPermit, SafeMulticallable {
     }
 
     function initialize(address _owner) external {
-        if(initialized) revert Initialized();
+        if (initialized) revert Initialized();
         owner = _owner;
         initialized = true;
         paused = true;

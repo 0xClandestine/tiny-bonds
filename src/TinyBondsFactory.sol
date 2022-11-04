@@ -39,9 +39,7 @@ contract TinyBondsFactory is SafeMulticallable {
         external
         returns (address market)
     {
-        bytes memory data = abi.encode(outputToken, inputToken, term);
-
-        market = implementation.cloneDeterministic(data, salt);
+        market = implementation.cloneDeterministic(abi.encode(outputToken, inputToken, term), salt);
 
         emit MarketCreated(market);
     }
@@ -51,8 +49,8 @@ contract TinyBondsFactory is SafeMulticallable {
         view
         returns (address)
     {
-        bytes memory data = abi.encode(outputToken, inputToken, term);
-
-        return implementation.predictDeterministicAddress(data, salt, address(this));
+        return implementation.predictDeterministicAddress(
+            abi.encode(outputToken, inputToken, term), salt, address(this)
+        );
     }
 }
