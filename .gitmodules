@@ -1,0 +1,3 @@
+[submodule "lib/solplot"]
+	path = lib/solplot
+	url = https://github.com/0xClandestine/solplot
