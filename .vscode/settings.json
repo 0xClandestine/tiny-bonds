@@ -2,6 +2,7 @@
   "solidity.remappings": [
     "forge-std=lib/forge-std/src",
     "solbase=lib/solbase/src",
+    "solplot=lib/solplot/src"
 ],
   "solidity.compileUsingLocalVersion": "v0.8.0"
 }

@@ -2,6 +2,8 @@
 
 Tiny Bonds enable anyone to raise liquidity or capital in exchange for their tokens. Tiny Bonds is a virtual constant product AMM with dutch auction functionality.
 
+<img align="center" width="512" height="512" src="output.svg" />
+
 ## Overview
 
 1. Protocol XYZ wants to sell some of their XYZ tokens for DAI, so they call `create()` within the `TinyBondsFactory` to create their own `TinyBonds` market.
@@ -22,14 +24,6 @@ To install with [Foundry](https://github.com/gakonst/foundry):
 ```
 forge install 0xClandestine/tiny-bonds
 ```
-
-## Simulation
-Forecast bond price movement assuming no purchases are made.
-```js
-python3 simulation.py --available-debt 50000000000000000000 --virtual-input 100000000000000000000 --virtual-output 50000000000000000000 --half-life 1 --half-lives 7 --level-bips 9000
-```
-
-<p align="left"><img src="demo.png" /></p>
 
 ## Local development
 
