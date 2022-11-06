@@ -2,7 +2,7 @@
 
 Tiny Bonds enable anyone to raise liquidity or capital in exchange for their tokens. Tiny Bonds is a virtual constant product AMM with dutch auction functionality.
 
-<img align="center" width="512" height="512" src="output.svg" />
+<img align="center" src="output.svg" />
 
 ## Overview
 
